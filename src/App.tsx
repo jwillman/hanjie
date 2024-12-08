@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import "./App.css";
-import { solveNonogram } from "./solver";
 import { getHanjieHints } from "./utils";
 import { Hints } from "./types";
 import { encodePuzzle, decodePuzzle } from "./encoding";
@@ -100,13 +99,6 @@ const App: React.FC = () => {
             setCellColors(
                 Array.from({ length: gridSize }, () => Array(gridSize).fill(0))
             );
-        }
-    };
-
-    const checkSolvability = () => {
-        if (mode !== "solve") {
-            const solution = solveNonogram(gridSize, rowHints, columnHints);
-            alert(solution ? "Puzzle is solvable." : "Puzzle is not solvable.");
         }
     };
 
