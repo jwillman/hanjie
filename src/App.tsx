@@ -99,6 +99,12 @@ const App: React.FC = () => {
         }
     }
 
+    const resetCells = () => {
+        setCellColors(
+            Array.from({ length: gridSize }, () => Array(gridSize).fill(false))
+        );
+    };
+
     return (
         <div className="page-container">
             <div className="puzzle-container">
@@ -141,6 +147,9 @@ const App: React.FC = () => {
                         {cells}
                     </div>
                 </div>
+            </div>
+            <div className="controls">
+                <button onClick={resetCells}>Reset</button>
             </div>
         </div>
     );
