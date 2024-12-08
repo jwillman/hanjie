@@ -104,3 +104,9 @@ body {
 .top-left-corner {
     display: none;
 }
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center; /* This vertically centers all items */
+}

@@ -58,7 +58,6 @@ const App: React.FC = () => {
     }, [cellColors, originalPuzzle, mode, gridSize]);
 
     const toggleCellColor = (row: number, col: number, color: boolean) => {
-        // In solve mode, we allow toggling because user is trying to solve.
         setCellColors((prevColors) => {
             const newColors = prevColors.map((r) => [...r]);
             newColors[row][col] = color;
@@ -137,13 +136,25 @@ const App: React.FC = () => {
 
     const generateSolveLink = () => {
         // In creation mode, use cellColors as originalPuzzle
-        // In solve mode, it's already originalPuzzle but solve mode shouldn't generate link
         const puzzleForLink = mode === "solve" ? originalPuzzle : cellColors;
         const encoded = encodePuzzle(puzzleForLink);
         const url = new URL(window.location.href);
         url.searchParams.set("mode", "solve");
         url.searchParams.set("p", encoded);
         return url.toString();
+    };
+
+    const checkUserSolution = () => {
+        // Compare cellColors to originalPuzzle
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                if (cellColors[r][c] !== originalPuzzle[r][c]) {
+                    alert("Not correct. Keep trying!");
+                    return;
+                }
+            }
+        }
+        alert("Congratulations! You've solved it correctly!");
     };
 
     return (
@@ -199,11 +210,14 @@ const App: React.FC = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            Get Solve Link
+                            Get a link to the puzzle
                         </a>
                     </>
                 ) : (
-                    <button onClick={resetCells}>Reset to Blank</button>
+                    <>
+                        <button onClick={resetCells}>Reset</button>
+                        <button onClick={checkUserSolution}>Check</button>
+                    </>
                 )}
             </div>
         </div>
