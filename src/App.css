@@ -19,8 +19,12 @@ body {
     height: 100vh;
 }
 
+.solvable-label {
+    margin-top: 10px;
+}
+
 .controls {
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
 .puzzle-container {

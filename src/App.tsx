@@ -1,8 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "./App.css";
+import { solveNonogram } from "./solver";
+import { getHanjieHints } from "./utils";
+import { Hints } from "./types";
 
 const App: React.FC = () => {
-    const gridSize: number = 15; // 15x15 grid
+    const gridSize: number = 15;
 
     const [cellColors, setCellColors] = useState<boolean[][]>(
         Array.from({ length: gridSize }, () => Array(gridSize).fill(false))
@@ -12,6 +15,7 @@ const App: React.FC = () => {
     const [drawTargetColor, setDrawTargetColor] = useState<boolean | null>(
         null
     );
+    const [isSolvable, setIsSolvable] = useState<boolean>(true);
 
     const toggleCellColor = (row: number, col: number, color: boolean) => {
         setCellColors((prevColors) => {
@@ -40,30 +44,11 @@ const App: React.FC = () => {
         }
     };
 
-    const getHanjieHints = (line: boolean[]): number[] => {
-        const hints: number[] = [];
-        let count = 0;
-
-        for (let i = 0; i < line.length; i++) {
-            if (line[i]) {
-                count++;
-            } else {
-                if (count > 0) {
-                    hints.push(count);
-                    count = 0;
-                }
-            }
-        }
-        if (count > 0) hints.push(count);
-
-        return hints;
-    };
-
-    const rowHints = useMemo(() => {
+    const rowHints: Hints = useMemo(() => {
         return cellColors.map((row) => getHanjieHints(row));
     }, [cellColors]);
 
-    const columnHints = useMemo(() => {
+    const columnHints: Hints = useMemo(() => {
         const hints = [];
         for (let c = 0; c < gridSize; c++) {
             const col = cellColors.map((row) => row[c]);
@@ -72,7 +57,13 @@ const App: React.FC = () => {
         return hints;
     }, [cellColors, gridSize]);
 
-    // Generate the grid cells
+    // Check solvability whenever cellColors change
+    useEffect(() => {
+        const solution = solveNonogram(gridSize, rowHints, columnHints);
+        console.log("solution", solution);
+        setIsSolvable(solution !== null);
+    }, [cellColors, rowHints, columnHints, gridSize]);
+
     const cells = [];
     for (let r = 0; r < gridSize; r++) {
         for (let c = 0; c < gridSize; c++) {
@@ -109,7 +100,6 @@ const App: React.FC = () => {
         <div className="page-container">
             <div className="puzzle-container">
                 <div className="grid-wrapper">
-                    {/* Column hints above the puzzle */}
                     <div className="column-hints-container">
                         {columnHints.map((hints, c) => (
                             <div key={c} className="column-hint">
@@ -124,7 +114,6 @@ const App: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* Row hints to the left of the puzzle */}
                     <div className="row-hints-container">
                         {rowHints.map((hints, r) => (
                             <div key={r} className="row-hint">
@@ -147,6 +136,11 @@ const App: React.FC = () => {
                         {cells}
                     </div>
                 </div>
+            </div>
+            <div className="solvable-label">
+                {isSolvable
+                    ? "This puzzle is solvable."
+                    : "This puzzle is not solvable."}
             </div>
             <div className="controls">
                 <button onClick={resetCells}>Reset</button>
