@@ -52,10 +52,10 @@ body {
 .column-hint {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
+    justify-content: flex-end; /* align items at the bottom so extra hints go upward */
+    align-items: center; /* hints stack vertically down from the top */
     font-size: 12px;
-    padding: 2px;
+    padding: 4px;
 }
 
 /* Row hints to the left of the puzzle */
@@ -72,11 +72,12 @@ body {
 .row-hint {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-end; /* align items at the right so extra hints expand to the left */
     align-items: center;
-    width: 30px;
+    width: auto; /* let it grow as needed */
     font-size: 12px;
-    gap: 3px;
+    padding: 4px;
+    gap: 5px; /* Add spacing between each hint number */
 }
 
 .grid-container {
