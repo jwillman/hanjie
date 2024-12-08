@@ -9,13 +9,41 @@ const App: React.FC = () => {
         Array(gridSize * gridSize).fill(false) // Initially, all cells are white (false)
     );
 
-    // Toggle cell color on click
-    const toggleCellColor = (index: number): void => {
+    // State to track mouse button being held down
+    const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
+
+    // State to track the target color during drawing
+    const [drawTargetColor, setDrawTargetColor] = useState<boolean | null>(
+        null
+    );
+
+    // Handle mouse down
+    const handleMouseDown = (index: number): void => {
+        setIsMouseDown(true);
+        const targetColor = !cellColors[index]; // Determine the target color for the drawing session
+        setDrawTargetColor(targetColor);
         setCellColors((prevColors) => {
             const newColors = [...prevColors];
-            newColors[index] = !newColors[index]; // Toggle color
+            newColors[index] = targetColor; // Set the first cell to the target color
             return newColors;
         });
+    };
+
+    // Handle mouse up
+    const handleMouseUp = (): void => {
+        setIsMouseDown(false);
+        setDrawTargetColor(null); // Reset the target color after the drawing session
+    };
+
+    // Handle mouse over (drawing)
+    const handleMouseOver = (index: number): void => {
+        if (isMouseDown && drawTargetColor !== null) {
+            setCellColors((prevColors) => {
+                const newColors = [...prevColors];
+                newColors[index] = drawTargetColor; // Set subsequent cells to the target color
+                return newColors;
+            });
+        }
     };
 
     // Generate the grid
@@ -36,12 +64,22 @@ const App: React.FC = () => {
                 style={{
                     backgroundColor: cellColors[index] ? "black" : "white", // Change color based on state
                 }}
-                onClick={() => toggleCellColor(index)} // Handle click event
+                onMouseDown={() => handleMouseDown(index)} // Start drawing
+                onMouseOver={() => handleMouseOver(index)} // Continue drawing
+                onMouseUp={handleMouseUp} // Stop drawing
             ></div>
         );
     });
 
-    return <div className="grid-container">{cells}</div>;
+    return (
+        <div
+            className="grid-container"
+            onMouseLeave={handleMouseUp} // Ensure drawing stops if the mouse leaves the grid
+            onMouseUp={handleMouseUp} // Ensure mouse up is captured on container level
+        >
+            {cells}
+        </div>
+    );
 };
 
 export default App;
