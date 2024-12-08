@@ -72,6 +72,7 @@ const App: React.FC = () => {
         return hints;
     }, [cellColors, gridSize]);
 
+    // Generate the grid cells
     const cells = [];
     for (let r = 0; r < gridSize; r++) {
         for (let c = 0; c < gridSize; c++) {
@@ -101,37 +102,37 @@ const App: React.FC = () => {
     return (
         <div className="page-container">
             <div className="puzzle-container">
-                <div className="top-left-corner"></div>
-
-                <div className="column-hints-container">
-                    {columnHints.map((hints, c) => (
-                        <div key={c} className="column-hint">
-                            {hints.length > 0 ? (
-                                hints.map((hint, idx) => (
-                                    <div key={idx}>{hint}</div>
-                                ))
-                            ) : (
-                                <div>0</div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="row-hints-container">
-                    {rowHints.map((hints, r) => (
-                        <div key={r} className="row-hint">
-                            {hints.length > 0 ? (
-                                hints.map((hint, idx) => (
-                                    <div key={idx}>{hint}</div>
-                                ))
-                            ) : (
-                                <div>0</div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
                 <div className="grid-wrapper">
+                    {/* Column hints above the puzzle */}
+                    <div className="column-hints-container">
+                        {columnHints.map((hints, c) => (
+                            <div key={c} className="column-hint">
+                                {hints.length > 0 ? (
+                                    hints.map((hint, idx) => (
+                                        <div key={idx}>{hint}</div>
+                                    ))
+                                ) : (
+                                    <div>0</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Row hints to the left of the puzzle */}
+                    <div className="row-hints-container">
+                        {rowHints.map((hints, r) => (
+                            <div key={r} className="row-hint">
+                                {hints.length > 0 ? (
+                                    hints.map((hint, idx) => (
+                                        <div key={idx}>{hint}</div>
+                                    ))
+                                ) : (
+                                    <div>0</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
                     <div
                         className="grid-container"
                         onMouseLeave={handleMouseUp}
