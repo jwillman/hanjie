@@ -163,8 +163,8 @@ const App: React.FC = () => {
         for (let c = 0; c < gridSize; c++) {
             const rowNumber = r + 1;
             const colNumber = c + 1;
-            const isFifthRow = rowNumber % 5 === 0;
-            const isFifthCol = colNumber % 5 === 0;
+            const isFifthRow = rowNumber % 5 === 0 && rowNumber !== gridSize;
+            const isFifthCol = colNumber % 5 === 0 && colNumber !== gridSize;
 
             let bgColor = "white";
             if (cellColors[r][c] === 1) bgColor = "black";
