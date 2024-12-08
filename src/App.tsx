@@ -1,23 +1,64 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import "./App.css";
 import { solveNonogram } from "./solver";
 import { getHanjieHints } from "./utils";
 import { Hints } from "./types";
+import { encodePuzzle, decodePuzzle } from "./encoding";
 
 const App: React.FC = () => {
     const gridSize: number = 15;
 
-    const [cellColors, setCellColors] = useState<boolean[][]>(
-        Array.from({ length: gridSize }, () => Array(gridSize).fill(false))
-    );
+    // Check URL for mode and puzzle
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get("mode");
+    const puzzleParam = urlParams.get("p");
+
+    // If in solve mode, decode the original puzzle (solution)
+    // Else, start with an empty puzzle for creation.
+    const originalPuzzle: boolean[][] =
+        mode === "solve" && puzzleParam
+            ? decodePuzzle(puzzleParam, gridSize, gridSize)
+            : Array.from({ length: gridSize }, () =>
+                  Array(gridSize).fill(false)
+              );
+
+    // In solve mode, the grid starts all white (user tries to solve).
+    // In creation mode, the grid is the puzzle being created.
+    const [cellColors, setCellColors] = useState<boolean[][]>(() => {
+        if (mode === "solve") {
+            return Array.from({ length: gridSize }, () =>
+                Array(gridSize).fill(false)
+            );
+        } else {
+            return Array.from({ length: gridSize }, () =>
+                Array(gridSize).fill(false)
+            );
+        }
+    });
 
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const [drawTargetColor, setDrawTargetColor] = useState<boolean | null>(
         null
     );
-    const [isSolvable, setIsSolvable] = useState<boolean>(true);
+
+    // Compute hints from originalPuzzle in solve mode, or from cellColors in creation mode.
+    const rowHints: Hints = useMemo(() => {
+        const puzzleForHints = mode === "solve" ? originalPuzzle : cellColors;
+        return puzzleForHints.map((row) => getHanjieHints(row));
+    }, [cellColors, originalPuzzle, mode]);
+
+    const columnHints: Hints = useMemo(() => {
+        const puzzleForHints = mode === "solve" ? originalPuzzle : cellColors;
+        const hints = [];
+        for (let c = 0; c < gridSize; c++) {
+            const col = puzzleForHints.map((row) => row[c]);
+            hints.push(getHanjieHints(col));
+        }
+        return hints;
+    }, [cellColors, originalPuzzle, mode, gridSize]);
 
     const toggleCellColor = (row: number, col: number, color: boolean) => {
+        // In solve mode, we allow toggling because user is trying to solve.
         setCellColors((prevColors) => {
             const newColors = prevColors.map((r) => [...r]);
             newColors[row][col] = color;
@@ -44,32 +85,11 @@ const App: React.FC = () => {
         }
     };
 
-    const rowHints: Hints = useMemo(() => {
-        return cellColors.map((row) => getHanjieHints(row));
-    }, [cellColors]);
-
-    const columnHints: Hints = useMemo(() => {
-        const hints = [];
-        for (let c = 0; c < gridSize; c++) {
-            const col = cellColors.map((row) => row[c]);
-            hints.push(getHanjieHints(col));
-        }
-        return hints;
-    }, [cellColors, gridSize]);
-
-    // Check solvability whenever cellColors change
-    useEffect(() => {
-        const solution = solveNonogram(gridSize, rowHints, columnHints);
-        console.log("solution", solution);
-        setIsSolvable(solution !== null);
-    }, [cellColors, rowHints, columnHints, gridSize]);
-
     const cells = [];
     for (let r = 0; r < gridSize; r++) {
         for (let c = 0; c < gridSize; c++) {
             const rowNumber = r + 1;
             const colNumber = c + 1;
-
             const isFifthRow = rowNumber % 5 === 0;
             const isFifthCol = colNumber % 5 === 0;
 
@@ -91,9 +111,39 @@ const App: React.FC = () => {
     }
 
     const resetCells = () => {
-        setCellColors(
-            Array.from({ length: gridSize }, () => Array(gridSize).fill(false))
-        );
+        if (mode === "solve") {
+            // In solve mode, reset to all white again
+            setCellColors(
+                Array.from({ length: gridSize }, () =>
+                    Array(gridSize).fill(false)
+                )
+            );
+        } else {
+            // In creation mode, reset to blank
+            setCellColors(
+                Array.from({ length: gridSize }, () =>
+                    Array(gridSize).fill(false)
+                )
+            );
+        }
+    };
+
+    const checkSolvability = () => {
+        if (mode !== "solve") {
+            const solution = solveNonogram(gridSize, rowHints, columnHints);
+            alert(solution ? "Puzzle is solvable." : "Puzzle is not solvable.");
+        }
+    };
+
+    const generateSolveLink = () => {
+        // In creation mode, use cellColors as originalPuzzle
+        // In solve mode, it's already originalPuzzle but solve mode shouldn't generate link
+        const puzzleForLink = mode === "solve" ? originalPuzzle : cellColors;
+        const encoded = encodePuzzle(puzzleForLink);
+        const url = new URL(window.location.href);
+        url.searchParams.set("mode", "solve");
+        url.searchParams.set("p", encoded);
+        return url.toString();
     };
 
     return (
@@ -137,13 +187,24 @@ const App: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="solvable-label">
-                {isSolvable
-                    ? "This puzzle is solvable."
-                    : "This puzzle is not solvable."}
-            </div>
             <div className="controls">
-                <button onClick={resetCells}>Reset</button>
+                {mode !== "solve" ? (
+                    <>
+                        <button onClick={resetCells}>Reset</button>
+                        {/* <button onClick={checkSolvability}>
+                            Check Solvability
+                        </button> */}
+                        <a
+                            href={generateSolveLink()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Get Solve Link
+                        </a>
+                    </>
+                ) : (
+                    <button onClick={resetCells}>Reset to Blank</button>
+                )}
             </div>
         </div>
     );
