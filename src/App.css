@@ -137,3 +137,30 @@ body {
     font-weight: bold;
     z-index: 9999;
 }
+.info-text {
+    margin-top: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 15px;
+    max-width: 300px;
+    text-align: left;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.info-text p {
+    margin: 0 0 5px 0;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.info-text ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.info-text li {
+    list-style: disc;
+    margin-bottom: 5px;
+}

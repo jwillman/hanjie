@@ -239,6 +239,17 @@ const App: React.FC = () => {
                 </div>
             </div>
             <div className="controls">
+                {mode === "solve" && (
+                    <div className="info-text">
+                        <p>
+                            <strong>Controls:</strong>
+                        </p>
+                        <ul>
+                            <li>Left-click: Fill a cell</li>
+                            <li>Right-click: Mark empty cell</li>
+                        </ul>
+                    </div>
+                )}
                 {mode !== "solve" ? (
                     <>
                         <button onClick={resetCells}>Reset</button>
@@ -254,7 +265,7 @@ const App: React.FC = () => {
                     <>
                         <button onClick={resetCells}>Reset</button>
                         <button onClick={checkUserSolution}>
-                            Check My Solution
+                            Check the solution
                         </button>
                     </>
                 )}
