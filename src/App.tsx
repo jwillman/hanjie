@@ -3,6 +3,7 @@ import "./App.css";
 import { getHanjieHints } from "./utils";
 import { Hints } from "./types";
 import { encodePuzzle, decodePuzzle } from "./encoding";
+import confetti from "canvas-confetti";
 
 const App: React.FC = () => {
     const gridSize: number = 15;
@@ -26,6 +27,10 @@ const App: React.FC = () => {
 
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const [drawTargetColor, setDrawTargetColor] = useState<number | null>(null);
+
+    // We'll add states to show success or error messages
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const rowHints: Hints = useMemo(() => {
         const puzzleForHints =
@@ -54,6 +59,9 @@ const App: React.FC = () => {
             newColors[row][col] = color;
             return newColors;
         });
+        // Reset messages when the puzzle changes
+        setShowSuccess(false);
+        setErrorMessage(null);
     }
 
     const handleMouseDown = (
@@ -100,6 +108,8 @@ const App: React.FC = () => {
                 Array.from({ length: gridSize }, () => Array(gridSize).fill(0))
             );
         }
+        setShowSuccess(false);
+        setErrorMessage(null);
     };
 
     const generateSolveLink = () => {
@@ -121,19 +131,31 @@ const App: React.FC = () => {
                 const userColor = cellColors[r][c];
                 if (puzzleBlack) {
                     if (userColor !== 1) {
-                        alert("Not correct. Keep trying!");
+                        // Not correct
+                        setShowSuccess(false);
+                        setErrorMessage("Not correct. Keep trying!");
                         return;
                     }
                 } else {
                     // puzzle expects white
                     if (userColor === 1) {
-                        alert("Not correct. Keep trying!");
+                        // Not correct
+                        setShowSuccess(false);
+                        setErrorMessage("Not correct. Keep trying!");
                         return;
                     }
                 }
             }
         }
-        alert("Congratulations! You've solved it correctly!");
+        // If we reach here, solution is correct!
+        setShowSuccess(true);
+        setErrorMessage(null);
+        // Trigger confetti animation
+        confetti({
+            particleCount: 200,
+            spread: 70,
+            origin: { y: 0.6 },
+        });
     };
 
     const cells = [];
@@ -166,6 +188,17 @@ const App: React.FC = () => {
 
     return (
         <div className="page-container">
+            {/* If solution is correct, show success text */}
+            {showSuccess && (
+                <div className="success-message">
+                    Congratulations! You've solved it!
+                </div>
+            )}
+            {/* If there's an error message, show it in red text */}
+            {errorMessage && (
+                <div className="error-message">{errorMessage}</div>
+            )}
+
             <div className="puzzle-container">
                 <div className="grid-wrapper">
                     <div className="column-hints-container">
