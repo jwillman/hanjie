@@ -1,166 +1,416 @@
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
 }
 
-.page-container {
+.logo-mark {
+    width: 18px;
+    height: 18px;
+    background:
+        linear-gradient(var(--cell-filled) 0 0) 0 0 / 50% 50% no-repeat,
+        linear-gradient(var(--cell-filled) 0 0) 100% 100% / 50% 50% no-repeat;
+    border: 2px solid var(--cell-filled);
+    box-sizing: border-box;
+}
+
+.header nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.header nav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 2px;
+    border-bottom: 2px solid transparent;
+}
+
+.header nav a[aria-current="page"] {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+
+.theme-toggle {
+    margin-left: auto;
+    font-size: 0.85em;
+}
+
+/* Page */
+.page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
+    gap: 14px;
+    padding: 28px 16px 40px;
+    box-sizing: border-box;
 }
 
-.solvable-label {
-    margin-top: 10px;
+.page h1 {
+    margin: 0;
 }
 
-.controls {
-    margin-top: 20px;
+.lead {
+    margin: 0;
+    color: var(--muted);
 }
 
-.puzzle-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.grid-wrapper {
-    position: relative;
-}
-
-/* Column hints above the puzzle */
-.column-hints-container {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+/* Board: column hints on top, row hints on the left, grid bottom-right */
+.board {
+    --cell: clamp(14px, calc((100vw - 140px) / var(--cols)), 30px);
+    --hint-size: min(12px, calc(var(--cell) * 0.55));
     display: grid;
-    grid-template-columns: repeat(15, 30px);
-    text-align: center;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        ". col"
+        "row grid";
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.column-hints {
+    grid-area: col;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), var(--cell));
 }
 
 .column-hint {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* align items at the bottom so extra hints go upward */
-    align-items: center; /* hints stack vertically down from the top */
-    font-size: 12px;
-    padding: 4px;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 4px;
+    font-size: var(--hint-size);
+    line-height: 1.3;
+    letter-spacing: -0.03em;
+    border-radius: 4px 4px 0 0;
 }
 
-/* Row hints to the left of the puzzle */
-.row-hints-container {
-    position: absolute;
-    top: 50%;
-    right: 100%;
-    transform: translateY(-50%);
+.row-hints {
+    grid-area: row;
     display: grid;
-    grid-template-rows: repeat(15, 30px);
-    text-align: right;
+    grid-template-rows: repeat(var(--rows), var(--cell));
 }
 
 .row-hint {
     display: flex;
-    flex-direction: row;
-    justify-content: flex-end; /* align items at the right so extra hints expand to the left */
+    justify-content: flex-end;
     align-items: center;
-    width: auto; /* let it grow as needed */
-    font-size: 12px;
-    padding: 4px;
-    gap: 5px; /* Add spacing between each hint number */
+    gap: 5px;
+    padding: 0 6px 0 4px;
+    font-size: var(--hint-size);
+    border-radius: 4px 0 0 4px;
 }
 
-.grid-container {
+.column-hint.active,
+.row-hint.active {
+    background: var(--crosshair);
+    font-weight: 700;
+}
+
+.column-hint.done,
+.row-hint.done {
+    color: var(--muted);
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.grid {
+    grid-area: grid;
     display: grid;
-    grid-template-columns: repeat(15, 30px);
-    grid-template-rows: repeat(15, 30px);
-    gap: 0;
+    grid-template-columns: repeat(var(--cols), var(--cell));
+    grid-template-rows: repeat(var(--rows), var(--cell));
+    border: 2px solid var(--grid-line);
+    background: var(--cell-bg);
+    touch-action: none; /* let pointer events draw instead of scrolling */
 }
 
-.grid-cell {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #ccc;
+.grid:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.cell {
+    position: relative;
+    border: 1px solid var(--cell-line);
     box-sizing: border-box;
+    background: var(--cell-bg);
 }
 
-.border-bottom-thick {
-    border-bottom: 2px solid #000;
+.cell.crosshair {
+    background: var(--crosshair);
 }
 
-.border-right-thick {
-    border-right: 2px solid #000;
+.cell.filled {
+    background: var(--cell-filled);
 }
 
-.top-left-corner {
+.cell.marked {
+    background: var(--cell-marked);
+}
+
+/* A small cross on marked cells so they read as "empty", not "grey" */
+.cell.marked::after {
+    content: "";
+    position: absolute;
+    inset: 30%;
+    background:
+        linear-gradient(45deg, transparent 45%, var(--muted) 45% 55%, transparent 55%),
+        linear-gradient(-45deg, transparent 45%, var(--muted) 45% 55%, transparent 55%);
+    opacity: 0.6;
+}
+
+.grid:focus-visible .cell.cursor {
+    outline: 3px solid var(--accent);
+    outline-offset: -3px;
+    z-index: 1;
+}
+
+.thick-bottom {
+    border-bottom: 2px solid var(--grid-line);
+}
+
+.thick-right {
+    border-right: 2px solid var(--grid-line);
+}
+
+.cell.mistake {
+    box-shadow: inset 0 0 0 3px var(--mistake);
+}
+
+.cell.ambiguous {
+    box-shadow: inset 0 0 0 3px var(--ambiguous);
+}
+
+.board.previewing .grid {
+    border-style: dashed;
+    border-color: var(--accent);
+}
+
+.board.solved .cell.marked,
+.board.solved .cell.crosshair:not(.filled) {
+    background: var(--cell-bg);
+}
+
+.board.solved .cell.marked::after {
     display: none;
 }
 
-.controls {
+.board.solved .grid {
+    animation: solved-pop 0.5s ease-out;
+}
+
+@keyframes solved-pop {
+    50% {
+        transform: scale(1.03);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .board.solved .grid {
+        animation: none;
+    }
+}
+
+/* Status and controls */
+.status {
     display: flex;
-    gap: 1rem;
-    align-items: center; /* This vertically centers all items */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    min-height: 1.5em;
+    max-width: 520px;
+    margin: 0;
+    text-align: center;
+    font-weight: 600;
 }
 
-.success-message {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #4caf50;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    z-index: 9999;
+.status-info {
+    color: var(--muted);
+    font-weight: normal;
 }
 
-.error-message {
-    position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #f44336;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    z-index: 9999;
+.status-ok {
+    color: var(--ok);
 }
-.info-text {
-    margin-top: 20px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+
+.status-warn {
+    color: var(--warn);
+}
+
+.status-error {
+    color: var(--error);
+}
+
+.inline-toggle {
+    font-weight: normal;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    max-width: 720px;
+}
+
+.toolbar .group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.link-disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.notice {
+    min-height: 1.5em;
+    color: var(--ok);
+    font-weight: 600;
+}
+
+.tool-toggle {
+    display: flex;
+}
+
+.tool-toggle button:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.tool-toggle button:last-child {
+    border-radius: 0 8px 8px 0;
+    margin-left: -1px;
+}
+
+.tool-toggle button.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+}
+
+/* Image import */
+.import {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px 15px;
-    max-width: 300px;
-    text-align: left;
-    font-size: 14px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background: var(--surface);
 }
 
-.info-text p {
-    margin: 0 0 5px 0;
-    font-weight: bold;
-    font-size: 15px;
+.import-panel label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Solve page */
+.solve-header {
+    display: flex;
+    justify-content: center;
+}
+
+.timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.info-text {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 15px;
+    max-width: 420px;
+    font-size: 14px;
+}
+
+.info-text summary {
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .info-text ul {
-    margin: 0;
+    margin: 6px 0 0;
     padding-left: 20px;
 }
 
-.info-text li {
-    list-style: disc;
-    margin-bottom: 5px;
+/* Puzzle list */
+.example-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    width: min(720px, 100%);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.example-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.example-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.example-name {
+    font-weight: 600;
+}
+
+.example-meta {
+    color: var(--muted);
+    font-size: 0.9em;
+}
+
+@media (max-width: 480px) {
+    .header {
+        gap: 0.75rem;
+    }
+    .theme-toggle {
+        font-size: 0.75em;
+        padding: 0.35em 0.6em;
+    }
 }
