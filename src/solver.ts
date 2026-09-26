@@ -79,7 +79,7 @@ export function solveLine(line: Line, hint: number[]): Line | null {
 
 export type SolveResult =
     | { status: "unique"; solution: Grid }
-    | { status: "multiple" }
+    | { status: "multiple"; solutions: [Grid, Grid] }
     | { status: "none" }
     | { status: "too-complex" };
 
@@ -162,10 +162,14 @@ export function analyzePuzzle(
         throw e;
     }
 
+    const toGrid = (g: number[][]): Grid =>
+        g.map((row) => row.map((cell) => cell === FILLED));
     if (solutions.length === 0) return { status: "none" };
-    if (solutions.length > 1) return { status: "multiple" };
-    return {
-        status: "unique",
-        solution: solutions[0].map((row) => row.map((cell) => cell === FILLED)),
-    };
+    if (solutions.length > 1) {
+        return {
+            status: "multiple",
+            solutions: [toGrid(solutions[0]), toGrid(solutions[1])],
+        };
+    }
+    return { status: "unique", solution: toGrid(solutions[0]) };
 }

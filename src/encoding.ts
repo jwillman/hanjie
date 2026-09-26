@@ -74,12 +74,15 @@ function parseSize(value: string | null): number {
 
 export type ParsedLink =
     | { kind: "create" }
+    | { kind: "examples" }
     | { kind: "solve"; puzzle: Grid }
     | { kind: "error"; message: string };
 
 export function parsePuzzleLink(search: string): ParsedLink {
     const params = new URLSearchParams(search);
-    if (params.get("mode") !== "solve") return { kind: "create" };
+    const mode = params.get("mode");
+    if (mode === "examples") return { kind: "examples" };
+    if (mode !== "solve") return { kind: "create" };
 
     const encoded = params.get("p");
     if (!encoded) {
